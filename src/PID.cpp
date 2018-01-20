@@ -1,6 +1,5 @@
 #include "PID.h"
 #include <chrono>
-#include <cmath>        // std::abs
 
 using namespace std;
 
@@ -27,11 +26,12 @@ void PID::Init(double Kp, double Ki, double Kd) {
 void PID::UpdateError(double cte) {
   auto now = chrono::steady_clock::now();
 
-  auto dt = chrono::duration_cast<chrono::milliseconds>(now - last_time).count();
+  std::chrono::duration<double> diff = now-last_time;
+  double dt = diff.count();
 
-  this->d_error = (cte - this->p_error);
+  this->d_error = (cte - this->p_error)/dt;
   this->p_error = cte;
-  this->i_error += cte;
+  this->i_error += cte*dt;
 
   this->last_time = now;
 }
