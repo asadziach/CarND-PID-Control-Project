@@ -36,7 +36,7 @@ int main()
 
   // TODO: Initialize the pid variable.
   steer_pid.Init(0.15, 0, .15);
-  throttle_pid.Init(0.1, 0, 0);
+  throttle_pid.Init(1, 0, 0);
 
   h.onMessage([&steer_pid, &throttle_pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -66,10 +66,10 @@ int main()
           else if (steer_value < -1.0)
             steer_value = -1.0;
 
-          throttle_pid.UpdateError(fabs(angle));
-          double throttle = 0.3;
-          if(speed > 10){
-            throttle = 0.5 + throttle_pid.TotalError();
+          throttle_pid.UpdateError(fabs(speed/50.0 * angle/2));
+          double throttle = 1;
+          if(speed > 25){
+            throttle = 1 + throttle_pid.TotalError();
             if (throttle > 1.0)
               throttle = 1.0;
             else if (throttle < -1.0)
