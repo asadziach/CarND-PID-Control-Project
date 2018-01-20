@@ -4,7 +4,7 @@
 using namespace std;
 
 /*
- * TODO: Complete the PID class.
+ * The PID class.
  */
 
 PID::PID() {

@@ -38,9 +38,9 @@ int main() {
 
   PID steer_pid, throttle_pid;
 
-  // TODO: Initialize the pid variable.
-  steer_pid.Init(0.1, 0, .125);
-  throttle_pid.Init(1, 0, 0);
+  // Initialize the pid variable.
+  steer_pid.Init(0.1, 0, .125); // PD controller
+  throttle_pid.Init(1, 0, 0);   // P  controller
 
   h.onMessage(
       [&steer_pid, &throttle_pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
@@ -59,10 +59,8 @@ int main() {
               double speed = std::stod(j[1]["speed"].get<std::string>());
               double angle = std::stod(j[1]["steering_angle"].get<std::string>());
               /*
-               * TODO: Calcuate steering value here, remember the steering value is
-               * [-1, 1].
-               * NOTE: Feel free to play around with the throttle and speed. Maybe use
-               * another PID controller to control the speed!
+               * Calculate steering value here, steering value is [-1, 1].
+               * Used another P controller to control the speed.
                */
               steer_pid.UpdateError(cte);
               double steer_value = steer_pid.TotalError();
@@ -71,6 +69,7 @@ int main() {
               else if (steer_value < -1.0)
               steer_value = -1.0;
 
+              // Throttle depends on current speed and steering angle.
               throttle_pid.UpdateError(fabs(speed/50.0 * angle/2));
               double throttle = 1;
               if(speed > 25) {
@@ -80,15 +79,10 @@ int main() {
                 else if (throttle < -1.0)
                 throttle = -1.0;
               }
-
-              // DEBUG
-              std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
-
               json msgJson;
               msgJson["steering_angle"] = steer_value;
               msgJson["throttle"] = throttle;
               auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-              std::cout << msg << std::endl;
               ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
             }
           } else {
